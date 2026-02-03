@@ -4,6 +4,7 @@
 #include <medals>
 #include <ranking_globals>
 #include <ranking_db>
+#include <cromchat2>
 
 #define PLUGIN_NAME "Bhop Ranking"
 #define PLUGIN_AUTHOR "MrShark45"
@@ -15,6 +16,7 @@ public plugin_init()
 
 	register_clcmd("say /toprank", "ShowTopCmd");
 	register_clcmd("say /rank", "ShowRankCmd");
+	CC_SetPrefix("&x04[FWO]");
 }
 
 public plugin_natives()
@@ -101,6 +103,8 @@ public plugin_cfg()
 	g_aRanks = ArrayCreate(eRank);
 	LOAD_SETTINGS();
 	DB_Init();
+	
+	register_dictionary("medals.txt");
 }
 
 public plugin_end()
@@ -206,7 +210,7 @@ public ShowRankCmd(id)
 {
 	new medals[3];
 	get_user_map_medals(id, medals, 3);
-	client_print_color(id, print_team_red, "^4[MEDALS] ^1Your rank is ^4%d ^1| Score ^4[%d]", g_aData[id][iRank], g_aData[id][iScore]);
-	client_print_color(id, print_team_red, "^4[MEDALS] ^1Medals: ^1Bronze ^4%d ^1| Silver ^4%d ^1Gold ^4%d"	, g_aData[id][iBronze], g_aData[id][iSilver], g_aData[id][iGold]);
-	client_print_color(id, print_team_red, "^4[MEDALS] ^1Map Medals: ^1Bronze ^4%d ^1| Silver ^4%d ^1Gold ^4%d", medals[0], medals[1], medals[2]);
+	CC_SendMessage(id, "%L", id, "MEDALS_RANK_SCORE", g_aData[id][iRank], g_aData[id][iScore]);
+	CC_SendMessage(id, "%L", id, "MEDALS_TOTAL", g_aData[id][iBronze], g_aData[id][iSilver], g_aData[id][iGold]);
+	CC_SendMessage(id, "%L", id, "MEDALS_MAP", medals[0], medals[1], medals[2]);
 }

@@ -3,6 +3,7 @@
 #include <nvault>
 #include <timer>
 #include <credits>
+#include <cromchat2>
 
 #define USE_RANKING 0
 
@@ -10,10 +11,12 @@
 #include <ranking>
 #endif
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define MAX_CATEGORIES 34
 #define TASK_ID 4832
+
+#define MENU_PREFIX "\r[FWO] \d- \w"
 
 new bronze[3] = {205, 127, 50};
 new silver[3] = {192, 192, 192};
@@ -56,6 +59,8 @@ public plugin_init()
 	register_clcmd("say /medals", "CategoriesMenu");
 
 	g_iHudSync = CreateHudSyncObj();
+	
+	CC_SetPrefix("&x04[FWO]");
 }
 
 public plugin_natives()
@@ -121,6 +126,8 @@ public plugin_cfg()
 	g_iVault = nvault_open(szVaultName);
 
 	set_task(1.0, "ShowMedalsTask", TASK_ID, _, _, "b");
+
+	register_dictionary("medals.txt");
 }
 
 public plugin_end()
@@ -154,7 +161,7 @@ public LOAD_MEDALS()
 	new lastCat = -1;
 	
 	while(!feof(file_pointer)){
-		fgets(file_pointer, data, charsmax(data))
+		fgets(file_pointer, data, charsmax(data));
 		trim(data);
 
 		switch(data[0])
@@ -244,7 +251,7 @@ public HideMedalsCmd(id)
 public CategoriesMenu(id)
 {
 	if(!g_bMedalsEnabled){
-		client_print_color(id, print_team_default, "^4[MEDALS] ^1There are no medals on this map!");
+		CC_SendMessage(id, "%L", id, "NO_MAP_MEDALS");
 		return PLUGIN_HANDLED;
 	}
 
@@ -255,7 +262,7 @@ public CategoriesMenu(id)
 	new szData[4];
 	new size = ArraySize(g_aMedals);
 
-	format(title, charsmax(title), "\rMedals \y%s \r:", g_szMapName);
+	formatex(title, charsmax(title), "%L", id, "MEDALS_MAIN_MENU_TITLE", MENU_PREFIX, g_szMapName);
 	new menu = menu_create(title, "categories_menu_handler");
 	
 	for(new i=0;i<size;i++){
@@ -269,6 +276,15 @@ public CategoriesMenu(id)
 		catItem[temp_medal[iMedalCategory]] = true;
 	}
 
+	formatex(title, charsmax(title), "%L", id, "MENU_BACK");
+	menu_setprop(menu, MPROP_BACKNAME, title);
+
+	formatex(title, charsmax(title), "%L", id, "MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, title);
+
+	formatex(title, charsmax(title), "%L", id, "MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, title);
+	
 	menu_display(id, menu, 0);
 	return PLUGIN_HANDLED;
 }
@@ -297,7 +313,7 @@ public categories_menu_handler(id, menu, item)
 
 public MedalsMenu(id, cat)
 {
-	new temp_medal[eMedalInfo], size, medal_name[8];
+	new temp_medal[eMedalInfo], size, medal_name[32];
 	size = ArraySize(g_aMedals);
 	new text[128];
 	new time[16];
@@ -306,22 +322,24 @@ public MedalsMenu(id, cat)
 	new catName[32];
 	get_category_name(cat, catName, charsmax(catName));
 
-	format(title, charsmax(title), "\rMedals \y%s \w%s\r:", g_szMapName, catName);
-
+	formatex(title, charsmax(title), "%L", id, "MEDALS_MENU_TITLE", MENU_PREFIX, g_szMapName, catName);
+	
 	new menu = menu_create(title, "menu_handler");
 
 	for(new i=0;i<size;i++){
- 		ArrayGetArray(g_aMedals, i, temp_medal);
+		ArrayGetArray(g_aMedals, i, temp_medal);
 		if(temp_medal[iMedalCategory] != cat) continue;
-
+		
 		format_time_float(time, charsmax(time), temp_medal[fMedalTime]);
-		get_medal_name(temp_medal[iMedalType], medal_name, charsmax(medal_name))
-		format(text, charsmax(text), "\d%s \y%s \d| \y%d credits %s", medal_name, time, temp_medal[iMedalReward], g_bMedalsCompleted[id][cat][temp_medal[iMedalType]]?"\r(Completed)":"");
- 		menu_additem(menu, text, "", 0);
+		get_medal_name(temp_medal[iMedalType], medal_name, charsmax(medal_name));
+
+		//Formatex bugged, need fix later
+		formatex(text, charsmax(text), "%L", id, "MEDAL_MENU_ITEM", medal_name, time, temp_medal[iMedalReward], g_bMedalsCompleted[id][cat][temp_medal[iMedalType]] ? "%L" : "", id, "MEDAL_MENU_COMPLETED");
+		menu_additem(menu, text, "", 0);
 	}
-
-	menu_setprop(menu, MPROP_EXITNAME, "Back");
-
+	formatex(title, charsmax(title), "%L", id, "MENU_BACK");
+	menu_setprop(menu, MPROP_EXITNAME, title);
+	
 	menu_display(id, menu, 0);
 	return PLUGIN_HANDLED;
 }
@@ -374,31 +392,23 @@ public reward_player(id, medal_type, reward)
 	
 	new colors[3];
 
-	switch(medal_type)
-	{
-		case 0:
-		{
-			colors = bronze;
+	switch(medal_type){
+			case 0: colors = bronze;
+			case 1: colors = silver;
+			case 2: colors = gold;
 		}
-		case 1:
-		{
-			colors = silver;
-		}
-		case 2:
-		{
-			colors = gold;
-		}
-	}
 
 	new Float:y = 0.05 + (medal_type / 10.0);
 	set_dhudmessage ( colors[0], colors[1], colors[2], -1.0, y, 0, 6.0, 12.0, 0.1, 0.2);
+
 	new medal_name[8];
 	get_medal_name(medal_type, medal_name, charsmax(medal_name));
+
 	for(new i=1;i<MAX_PLAYERS;i++)
 	{
-		if(!g_bShowHud[id] || is_user_connected(id)) continue;
+		if(!is_user_connected(i) || !g_bShowHud[i]) continue;
 		
-		show_dhudmessage(id, "%s got a %s MEDAL!", name, medal_name);
+		show_dhudmessage(i, "%L", LANG_PLAYER, "HUD_MEDAL_AWARDED", name, medal_name);
 	}
 	
 	set_user_credits(id, get_user_credits(id) + reward);
@@ -438,14 +448,14 @@ public SaveMedal(id, category_id, medal_type)
 
 stock format_time_float(output[], len, Float:time)
 {
-    new minutes, seconds, centiseconds;
+	new minutes, seconds, centiseconds;
 
-    minutes = floatround(time / 60.0, floatround_floor);
-    seconds = floatround(time, floatround_floor) % 60;
+	minutes = floatround(time / 60.0, floatround_floor);
+	seconds = floatround(time, floatround_floor) % 60;
 
-    centiseconds = floatround((time - floatround(time, floatround_floor)) * 100.0);
+	centiseconds = floatround((time - floatround(time, floatround_floor)) * 100.0);
 
-    formatex(output, len, "%02d:%02d.%02d", minutes, seconds, centiseconds);
+	formatex(output, len, "%02d:%02d.%02d", minutes, seconds, centiseconds);
 }
 
 
@@ -453,11 +463,8 @@ stock get_medal_name(id, buffer[], length)
 {
 	switch(id)
 	{
-		case 0:
-			format(buffer, length, "Bronze");
-		case 1:
-			format(buffer, length, "Silver");
-		case 2:
-			format(buffer, length, "Gold");
+		case 0: formatex(buffer, length, "%L", LANG_PLAYER, "MEDAL_BRONZE");
+		case 1: formatex(buffer, length, "%L", LANG_PLAYER, "MEDAL_SILVER");
+		case 2: formatex(buffer, length, "%L", LANG_PLAYER, "MEDAL_GOLD");
 	}
 }

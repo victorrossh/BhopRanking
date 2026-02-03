@@ -1,0 +1,43 @@
+[en]
+
+MEDALS_RANK_SCORE= &x01Your rank is &x04%d &x01| Score &x04[%d]
+MEDALS_TOTAL = &x01Medals: &x03Bronze &x04%d &x01| &x03Silver &x04%d &x01| &x03Gold &x04%d
+MEDALS_MAP = &x01Map Medals: &x03Bronze &x04%d &x01| &x03Silver &x04%d &x01| &x03Gold &x04%d
+
+NO_MAP_MEDALS = &x01There are no medals on this map.
+MEDALS_MAIN_MENU_TITLE = %sMedals:^n\y%s
+MEDALS_MENU_TITLE = %sMedals %s:^n\y%s\d
+MEDAL_MENU_ITEM = \d%s \y%s \d| \y%d credits%s // \d%s \y%s \d| \y%d credits%s
+MEDAL_MENU_COMPLETED = \r(Completed)
+
+MENU_BACK = Back
+MENU_NEXT = More
+MENU_EXIT = Exit
+
+HUD_MEDAL_AWARDED = %s got a %s MEDAL.
+
+MEDAL_BRONZE = Bronze
+MEDAL_SILVER = Silver
+MEDAL_GOLD = Gold
+
+[bp]
+
+MEDALS_RANK_SCORE = &x01Seu rank é &x04%d &x01| Medalhas &x04[%d]
+MEDALS_TOTAL = &x01Medalhas: &x03Bronze &x04%d &x01| &x03Prata &x04%d &x01| &x03Ouro &x04%d
+MEDALS_MAP = &x01Medalhas do Mapa: &x03Bronze &x04%d &x01| &x03Prata &x04%d &x01| &x03Ouro &x04%d
+
+NO_MAP_MEDALS = &x01Não há medalhas neste mapa.
+MEDALS_MAIN_MENU_TITLE = %sMedalhas:^n\y%s
+MEDALS_MENU_TITLE = %sMedalhas %s:^n\y%s
+MEDAL_MENU_ITEM = \d%s \y%s \d| \y%d créditos%s
+MEDAL_MENU_COMPLETED = \r(Concluído)
+
+MENU_BACK = Voltar
+MENU_NEXT = Próximo
+MENU_EXIT = Sair
+
+HUD_MEDAL_AWARDED = %s conquistou a medalha de %s.
+
+MEDAL_BRONZE = Bronze
+MEDAL_SILVER = Prata
+MEDAL_GOLD = Ouro
